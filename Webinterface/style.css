@@ -1,0 +1,34 @@
+.container {
+  width:100%;
+  /*margin:0 auto;*/
+
+}
+
+.mainbody {
+  height:100%;
+  width:100%;
+  border: solid #eee;
+  border-width:3px 0;
+}
+
+.header {
+  height:125px;
+  background-color: #aaa;
+
+}
+
+.left {
+  float: left;
+  height:100%;
+  width:10%;
+  border: solid #eee;
+  background-color: #eee;
+
+}
+
+.right {
+  height:100%;
+  margin-left:10%;
+  text-align: center;
+
+}

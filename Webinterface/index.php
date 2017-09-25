@@ -1,63 +1,87 @@
 <html>
-
     <head>
-
 	<meta charset="utf-8"/>
-        <script type="text/javascript" src="scripts.js"></script>
-        <link rel="stylesheet" type="text/css" href="styles.css">
+        <link rel="stylesheet" type="text/css" href="test.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 
     </head>
 
     <body>
 
-       	 <?php
-
-		$servername = "localhost";
-		$username = "NoAngst";
-		$password = "vVUTprUXD3KW4Van";
-
-		// Create connection
-		$conn = mysqli_connect($servername, $username, $password);
-
-		// Check connection
-		if (!$conn) {
-    			die("Connection failed: " . mysqli_connect_error());
-		}
-		echo "Connected successfully";
-
-        ?>
-
+	<form id="sepp" method="post">
+		
         <div class="container">
 
             <div class="header">
-
-            Header
-
             </div>
 
             <div class="mainbody">
-
                 <div class="left">
-
-                    <button onclick="uploadCSVs"()>Daten eintragen</button>
-                    <br>
-                    <button onclick="setWorkspaceDropdown()">Workspace Auswählen</button>
-                    <br>
-                    <select name="workspace" id="D1"></select>
+			<label><b>Existing Workspaces:</b></label>
+                    </br>
+                    <select id="Workspace" onchange="getSubjects()">
+			<option selected>Please select a Workspace</option>
+			<?php
+				include 'CreateDir.php';
+				$conn = mySQLConnect();
+				$sqlSelectWorkspace = "SELECT * FROM NoAngstV2.Workspace";
+				$resultSelect = mysqli_query($conn, $sqlSelectWorkspace);
+				while($row = mysqli_fetch_assoc($resultSelect)){
+					echo "<option>".$row['Name']."</option>";
+				}
+			?>
+			</select>
+			</br></br>
+			<label><b>Subjects:</b></label></br>
+			<select id="Subjects"></select>
+			</br></br>
+			<label><b>Session:</b></label></br>
+			<select id="Session"></select>
+			</br></br>
+			<label><b>Files:</b></label></br>
+			<select id="Files"></select>
+			</br>
+			</br>
+		 <button onclick="window.open('http://pcps00018.uni-regensburg.de/upload.html', 'File Upload', '_blank', 'width=500,heigth=300')"> Daten Hochladen</button>
 
 
                 </div>
 
                 <div class="right">
-
                     Diagramme und Stuff
-
                 </div>
 
             </div>
 
           </div>
-
+		
+	</form>
     </body>
 
+<script type='text/javascript'>
+    function getSubjects() {
+          $.ajax({
+            url:"getWorkspaceInfo.php",
+type: "POST",
+dataType: 'json',
+data: {workspace: $("#Workspace").val()},
+success: function(data){hallo(data);},
+
+});
+}
+
+function hallo(data){
+	var sel = document.getElementById("Subjects");
+	$("#Subjects").empty();
+	for(var i = 0; i < data.length; i++) {
+    	var opt = document.createElement('option');
+    	opt.innerHTML = data[i];
+    	opt.value = data[i];
+    	sel.appendChild(opt);
+	}
+}
+</script>
+ 
+
 </html>
+

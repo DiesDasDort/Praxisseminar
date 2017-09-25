@@ -1,0 +1,29 @@
+.container {
+width:100%;
+}
+
+.mainbody {
+height:100%;
+width:100%;
+border: solid #eee;
+border-width:3px 0;
+}
+
+.header {
+height:125px;
+background-color: #bf002a;
+}
+
+.left {
+float: left;
+height:100%;
+width:15%;
+border: solid #eee;
+background-color: #eee;
+}
+
+.right {
+height:100%;
+margin-left:10%;
+text-align: center;
+}

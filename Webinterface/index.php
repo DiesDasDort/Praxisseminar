@@ -1,145 +1,127 @@
 <html>
-
     <head>
-
 	<meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="test.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 
-
-  <style> /* set the CSS */
-
-  body { font: 12px Arial;}
-
-  path {
-      stroke: steelblue;
-      stroke-width: 2;
-      fill: none;
-  }
-
-  .axis path,
-  .axis line {
-      fill: none;
-      stroke: grey;
-      stroke-width: 1;
-      shape-rendering: crispEdges;
-  }
-
-  </style>
-
-
-
-        <script type="text/javascript" src="scripts.js"></script>
-        <link rel="stylesheet" type="text/css" href="styles.css">
-
-        <script src="http://d3js.org/d3.v3.min.js"></script>
-
-</head>
+    </head>
 
     <body>
 
-
+	<form id="sepp" method="post">
+		
         <div class="container">
 
             <div class="header">
-
-            Header
-
             </div>
 
             <div class="mainbody">
-
                 <div class="left">
-
-                    <button onclick="window.open('http://pcps00018.uni-regensburg.de/upload.html', 'File Upload', '_blank', 'width=500,heigth=300')"> Daten Hochladen</button>
-                    <br>
-                    <button onclick="setWorkspaceDropdown()">Workspace Auswählen</button>
-                    <br>
-                    <select name="workspace" id="D1"></select>
-		<br>
-                    <button onclick="drawChart()">Diagram zeichenen</button>
-
+			<button onclick="window.open('http://pcps00018.uni-regensburg.de/upload.html', 'File Upload', '_blank', 'width=500,heigth=300')"> Daten Hochladen</button> </br> </br>
+			<label><b>Existing Workspaces:</b></label>
+                    </br>
+                    <select id="Workspace" onchange="getSubjects()">
+			<option selected>Please select a Workspace</option>
+			<?php
+				include 'CreateDir.php';
+				$conn = mySQLConnect();
+				$sqlSelectWorkspace = "SELECT * FROM NoAngstV2.Workspace";
+				$resultSelect = mysqli_query($conn, $sqlSelectWorkspace);
+				while($row = mysqli_fetch_assoc($resultSelect)){
+					echo "<option value='".$row['ID']."'>".$row['Name']."</option>";
+				}
+			?>
+			</select>
+			</br></br>
+			<label><b>Subjects:</b></label></br>
+			<select id="Subjects" onchange="getSession()"></select>
+			</br></br>
+			<label><b>Session:</b></label></br>
+			<select id="Session" onchange="getFiles()"></select>
+			</br></br>
+			<label><b>Files:</b></label></br>
+			<select id="Files"></select>
+			</br>
+			</br>
+			<button>Draw Chart</button>
                 </div>
 
-                <div class="right" id="chart">
-
-
+                <div class="right">
+                    Diagramme und Stuff
                 </div>
 
             </div>
 
           </div>
-
+		
+	</form>
     </body>
 
-
-<script>
-
-function drawChart() {
-
- // Set the dimensions of the canvas / graph
-var margin = {top: 30, right: 20, bottom: 30, left: 50},
-    width = 1100 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
-
-// Parse the date / time
-var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S:%L").parse;
-
-// Set the ranges
-var x = d3.time.scale().range([0, width]);
-var y = d3.scale.linear().range([height, 0]);
-
-// Define the axes
-var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5);
-
-var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5);
-
-// Define the line
-var valueline = d3.svg.line()
-    .x(function(d) { return x(d.Timestamp); })
-    .y(function(d) { return y(d["Heart Rate"]); });
-
-// Adds the svg canvas
-var svg = d3.select("#chart")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
-
-// Get the data
-d3.csv("Test.csv", function(error, data) {
-    data.forEach(function(d) {
-        d.Timestamp = parseDate(d.Timestamp);
-        d["Heart Rate"] = +d["Heart Rate"];
-    });
-
-    // Scale the range of the data
-    x.domain(d3.extent(data, function(d) { return d.Timestamp; }));
-    y.domain([0, d3.max(data, function(d) { return d["Heart Rate"]; })]);
-
-    // Add the valueline path.
-    svg.append("path")
-        .attr("class", "line")
-        .attr("d", valueline(data));
-
-    // Add the X Axis
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
-
-    // Add the Y Axis
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
+<script type='text/javascript'>
+function getSubjects() {
+	$.ajax({
+	url:"getWorkspaceInfo.php",
+	type: "POST",
+	dataType: 'json',
+	data: {workspace: $("#Workspace").val()},
+	success: function(data){Subjects(data);},
 
 });
-
 }
 
-</script>
+function getSession(){
+	$.ajax({
+	url:"getSessionInfo.php",
+	type: "POST",
+	dataType: "json",
+	data:{subject: $("#Subjects").val(), workspace: $("#Workspace").val()},
+	success: function(data){Sessions(data)},
 
+});
+}
+
+function getFiles(){
+	$.ajax({
+	url:"getFileNames.php",
+	type: "POST",
+	dataType: "json",
+	data:{session: $("#Session").val(), subject: $("#Subjects").val(), workspace: $("#Workspace").val()},
+	success: function(data){Files(data)},
+});
+}
+
+function Subjects(data){
+	var sel = document.getElementById("Subjects");
+	$("#Subjects").empty();
+	for(var i = 0; i < data.length; i++) {
+    	var opt = document.createElement('option');
+    	opt.innerHTML = data[i];
+    	opt.value = data[i];
+    	sel.appendChild(opt);
+	}
+}
+function Sessions(data){
+	var sel = document.getElementById("Session");
+	$("#Session").empty();
+	for(var i = 0; i < data.length; i++) {
+    	var opt = document.createElement('option');
+    	opt.innerHTML = data[i];
+    	opt.value = data[i];
+    	sel.appendChild(opt);
+	}
+}
+function Files(data){
+	var sel = document.getElementById("Files");
+	$("#Files").empty();
+	for(var i = 0; i < data.length; i++) {
+    	var opt = document.createElement('option');
+    	opt.innerHTML = data[i];
+    	opt.value = data[i];
+    	sel.appendChild(opt);
+	}
+}
+</script>
+ 
 
 </html>
+
